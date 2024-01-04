@@ -1,7 +1,12 @@
 const express=require('express')
+const cors=require('cors')
 const app = express()
 const port= process.env.PORT || 5000
 require("dotenv").config();
+
+app.use(cors())
+app.use(express.json())
+
 
 app.get('/',(req,res)=>{
     res.send('Node server running ..................')
@@ -28,9 +33,13 @@ async function run() {
 
 
     app.get("/all-products",async(req,res)=>{
+        const page=req.query.page
+        const size=req.query.size
         const query={}
-        const resualt=await allproducts.find(query).toArray()
-        res.send(resualt)
+        const resualt= await allproducts.find(query).sort({price:1}).toArray()
+        const count= await allproducts.estimatedDocumentCount()
+        res.send({resualt,count})
+        // console.log(page,size,count);
     })
 
   } finally {
