@@ -43,8 +43,19 @@ async function run() {
     })
 
 
-    
+    app.get("/catagories",async(req,res)=>{
+      const query={}
+      const resualt=await allproducts.find(query).toArray()
+      res.send(resualt)
+    })
 
+    app.get("/catagorie-lod-data",async(req,res)=>{
+      const category=req.query.category
+      const query={category:category}
+      console.log(query);
+      const resualt=await allproducts.find(query).toArray()
+      res.send(resualt)
+    })
   } finally {
 
   }
