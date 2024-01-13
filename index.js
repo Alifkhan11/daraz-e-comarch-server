@@ -13,7 +13,7 @@ app.get('/',(req,res)=>{
 })
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.m6hhp6r.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   serverApi: {
@@ -39,7 +39,6 @@ async function run() {
         const resualt= await allproducts.find(query).skip(page*size).limit(size).toArray()//.sort({price:1})
         const count= await allproducts.estimatedDocumentCount()
         res.send({resualt,count})
-        // console.log(page,size);
     })
 
 
@@ -56,6 +55,16 @@ async function run() {
       const resualt=await allproducts.find(query).toArray()
       res.send(resualt)
     })
+
+
+    app.get("/productdetails/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const resualt = await allproducts.findOne(query);
+      res.send(resualt);
+    });
+
+
   } finally {
 
   }
