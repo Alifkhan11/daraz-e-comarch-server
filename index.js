@@ -9,7 +9,7 @@ require("dotenv").config();
 app.use(cors())
 app.use(express.json())
 
-console.log(process.env.STRIP_SK);
+// console.log(process.env.STRIP_SK);
 
 app.get('/', (req, res) => {
   res.send('Node server running ..................')
@@ -55,7 +55,7 @@ async function run() {
     app.get("/catagorie-lod-data/:categoryname", async (req, res) => {
       const category = req.params.categoryname
       const query = { category: category }
-      console.log(category);
+      // console.log(category);
       const resualt = await allproducts.find(query).toArray()
       res.send(resualt)
     })
@@ -87,7 +87,7 @@ async function run() {
 
          app.post('/payments', async (req, res) =>{
             const payment = req.body;
-            console.log(payment);
+            // console.log(payment);
             const result = await paymentCollection.insertOne(payment);
             // const id = payment.bookingId
             // const filter = {_id: ObjectId(id)}
@@ -98,6 +98,23 @@ async function run() {
             //     }
             // }
             // const updatedResult = await bookingsCollection.updateOne(filter, updatedDoc)
+            res.send(result);
+        })
+         app.get('/payments', async (req, res) =>{
+            // const payment = req.body;
+            // console.log(payment);
+            // const result = await paymentCollection.insertOne(payment);
+            // const id = payment.bookingId
+            // const filter = {_id: ObjectId(id)}
+            // const updatedDoc = {
+            //     $set: {
+            //         paid: true,
+            //         transactionId: payment.transactionId
+            //     }
+            // }
+            // const updatedResult = await bookingsCollection.updateOne(filter, updatedDoc)
+            const query={}
+            const result = await paymentCollection.find(query).toArray()
             res.send(result);
         })
 
