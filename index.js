@@ -34,6 +34,8 @@ async function run() {
 
     const allproducts = client.db("khan-market").collection("all-products");
     const paymentCollection = client.db("khan-market").collection("payments");
+    const usersCollection = client.db("khan-market").collection("users");
+    const cartCollection = client.db("khan-market").collection("addcart");
 
 
     app.get("/all-products", async (req, res) => {
@@ -100,22 +102,33 @@ async function run() {
             // const updatedResult = await bookingsCollection.updateOne(filter, updatedDoc)
             res.send(result);
         })
-         app.get('/payments', async (req, res) =>{
-            // const payment = req.body;
-            // console.log(payment);
-            // const result = await paymentCollection.insertOne(payment);
-            // const id = payment.bookingId
-            // const filter = {_id: ObjectId(id)}
-            // const updatedDoc = {
-            //     $set: {
-            //         paid: true,
-            //         transactionId: payment.transactionId
-            //     }
-            // }
-            // const updatedResult = await bookingsCollection.updateOne(filter, updatedDoc)
+         app.get('/myorder', async (req, res) =>{
             const query={}
             const result = await paymentCollection.find(query).toArray()
             res.send(result);
+        })
+
+        app.post('/users',async(req,res)=>{
+          const user=req.body
+          console.log(user);
+          const resualt= await usersCollection.insertOne(user)
+          res.send(resualt)
+        })
+        app.get('/users',async(req,res)=>{
+          const query={}
+          const resualt=await usersCollection.find(query).toArray()
+          res.send(resualt)
+        })
+        app.post('/cart',async(req,res)=>{
+          const data=req.body
+          console.log(data);
+          const resualt= await cartCollection.insertOne(data)
+          res.send(resualt)
+        })
+        app.get('/cart',async(req,res)=>{
+          const query={}
+          const resualt= await cartCollection.find(query).toArray()
+          res.send(resualt)
         })
 
 
