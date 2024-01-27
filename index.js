@@ -70,71 +70,123 @@ async function run() {
       res.send(resualt);
     });
 
-     app.post('/create-payment-intent', async (req, res) => {
-            const booking = req.body;
-            const price = booking.totalprice;
-            const amount = price * 100;
-            const paymentIntent =  await stripe.paymentIntents.create({
-                currency: 'usd',
-                amount: amount,
-                "payment_method_types": [
-                    "card"
-                ]
-            });
-            res.send({
-                clientSecret: paymentIntent.client_secret,
-            });
-            // console.log(paymentIntent.client_secret);
-        });
+    app.post('/create-payment-intent', async (req, res) => {
+      const booking = req.body;
+      const price = booking.totalprice;
+      const amount = price * 100;
+      const paymentIntent = await stripe.paymentIntents.create({
+        currency: 'usd',
+        amount: amount,
+        "payment_method_types": [
+          "card"
+        ]
+      });
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+      // console.log(paymentIntent.client_secret);
+    });
 
-         app.post('/payments', async (req, res) =>{
-            const payment = req.body;
-            // console.log(payment);
-            const result = await paymentCollection.insertOne(payment);
-            // const id = payment.bookingId
-            // const filter = {_id: ObjectId(id)}
-            // const updatedDoc = {
-            //     $set: {
-            //         paid: true,
-            //         transactionId: payment.transactionId
-            //     }
-            // }
-            // const updatedResult = await bookingsCollection.updateOne(filter, updatedDoc)
-            res.send(result);
-        })
-         app.get('/myorder', async (req, res) =>{
-            const query={}
-            const result = await paymentCollection.find(query).toArray()
-            res.send(result);
-        })
+    app.post('/payments', async (req, res) => {
+      const payment = req.body;
+      // console.log(payment);
+      const result = await paymentCollection.insertOne(payment);
+      // const id = payment.bookingId
+      // const filter = {_id: ObjectId(id)}
+      // const updatedDoc = {
+      //     $set: {
+      //         paid: true,
+      //         transactionId: payment.transactionId
+      //     }
+      // }
+      // const updatedResult = await bookingsCollection.updateOne(filter, updatedDoc)
+      res.send(result);
+    })
+    app.get('/myorder', async (req, res) => {
+      const email = req.query?.email
+      const query = { email: email }
+      const user = await usersCollection.findOne(query)
+      if (user?.role == 'admin') {
+        const query = {}
+        const resualt = await paymentCollection.find(query).toArray()
+        res.send(resualt)
+      } else {
+        const result = await paymentCollection.find(query).toArray()
+        res.send(result);
 
-        app.post('/users',async(req,res)=>{
-          const user=req.body
-          console.log(user);
-          const resualt= await usersCollection.insertOne(user)
-          res.send(resualt)
-        })
-        app.get('/users',async(req,res)=>{
-          const query={}
-          const resualt=await usersCollection.find(query).toArray()
-          res.send(resualt)
-        })
-        app.put('/usersadd',async(req,res)=>{
-          const query={}
-          const resualt=await usersCollection.find(query).toArray()
-          res.send(resualt)
-        })
-        app.post('/cart',async(req,res)=>{
-          const data=req.body
-          console.log(data);
-          const resualt= await cartCollection.insertOne(data)
-          res.send(resualt)
-        })
-        app.get('/cart',async(req,res)=>{
-          const query={}
-          const resualt= await cartCollection.find(query).toArray()
-          res.send(resualt)
-        })
+      }
+    })
+
+    app.post('/users', async (req, res) => {
+      const user = req.body
+      console.log(user);
+      const resualt = await usersCollection.insertOne(user)
+      res.send(resualt)
+    })
+    app.get('/users', async (req, res) => {
+      const query = {}
+      const resualt = await usersCollection.find(query).toArray()
+      res.send(resualt)
+    })
+    app.patch('/users/admin/:id', async (req, res) => {
+      const email = req.query.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      console.log(user);
+      if (user?.role !== "admin") {
+        return res.status(401).send({ message: "forbiden access" });
+      }
+      const id = req.params.id
+      const filter = { _id: new ObjectId(id) }
+      const option = { upsert: true };
+      const updatedoc = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const resualt = await usersCollection.updateOne(
+        filter,
+        updatedoc,
+        option
+      );
+      res.send(resualt);
+
+    })
+
+    app.get('/users/admin/:email',async(req,res)=>{
+      const email=req.params.email
+      const query={email}
+      const user=await usersCollection.findOne(query)
+      res.send({isAdmin :user?.role === 'admin'})
+    })
+
+    app.put('/usersadd', async (req, res) => {
+      const query = {}
+      const resualt = await usersCollection.find(query).toArray()
+      res.send(resualt)
+    })
+    app.post('/cart', async (req, res) => {
+      const data = req.body
+      console.log(data);
+      const resualt = await cartCollection.insertOne(data)
+      res.send(resualt)
+    })
+    app.get('/cart', async (req, res) => {
+      const email = req.query.email
+      // console.log(email);
+      const query = { email: email }
+      const user = await usersCollection.findOne(query)
+      console.log(user.role);
+      if (user?.role) {
+        const query = {}
+        const resualt = await cartCollection.find(query).toArray()
+        res.send(resualt)
+      } else {
+        const query = { useremail: email }
+        const resualt = await cartCollection.find(query).toArray()
+        res.send(resualt)
+      }
+    })
 
 
 
