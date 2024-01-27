@@ -119,6 +119,11 @@ async function run() {
           const resualt=await usersCollection.find(query).toArray()
           res.send(resualt)
         })
+        app.put('/usersadd',async(req,res)=>{
+          const query={}
+          const resualt=await usersCollection.find(query).toArray()
+          res.send(resualt)
+        })
         app.post('/cart',async(req,res)=>{
           const data=req.body
           console.log(data);
