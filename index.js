@@ -36,6 +36,7 @@ async function run() {
     const paymentCollection = client.db("khan-market").collection("payments");
     const usersCollection = client.db("khan-market").collection("users");
     const cartCollection = client.db("khan-market").collection("addcart");
+    const sellerUserCollection = client.db("khan-market").collection("selleruser");
 
 
     app.get("/all-products", async (req, res) => {
@@ -47,7 +48,20 @@ async function run() {
       res.send({ resualt, count })
     })
 
-
+    app.post('/all-products',async(req,res)=>{
+      const email=req.query.email
+      const query={email}
+      const selleruser=await sellerUserCollection.findOne(query)
+      // console.log(selleruser.role);
+      if(selleruser?.role){
+        const data=req.body
+        console.log(data);
+        const resualt=await allproducts.insertOne(data)
+        res.send(resualt)
+      }else{
+        return res.status(401).send({ message: "forbiden access" });
+      }
+    })
     app.get("/catagories", async (req, res) => {
       const query = {}
       const resualt = await allproducts.find(query).toArray()
@@ -186,6 +200,20 @@ async function run() {
         const resualt = await cartCollection.find(query).toArray()
         res.send(resualt)
       }
+    })
+
+    app.patch('/selleruser',async(req,res)=>{
+      const data=req.body
+      console.log(data);
+      const resualt=await sellerUserCollection.insertOne(data)
+      res.send(resualt)
+    })
+    app.get('/selleruser/:email',async(req,res)=>{
+      const email=req.params.email
+      const query={email:email}
+      console.log(query);
+      const resualt=await sellerUserCollection.findOne(query)
+      res.send(resualt)
     })
 
 
