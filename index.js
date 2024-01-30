@@ -2,14 +2,15 @@ const express = require('express')
 const cors = require('cors')
 const app = express()
 const stripe = require('stripe')('sk_test_51NrtkkG1p3nVEVTLXr7tNcRtVojRV6Frog35vZNy8mAXnbWl2Dvr7FWzD3gwgriuJTS0EPfJz3gusnSZTJDvmDTg00n2mjxZBv')
-// const stripe = require('stripe')(process.env.STRIP_SK)
+// const stripeapike=process.env.TOKEN_STRIP_KE
+// const stripe = require("stripe")(process.env.TOKEN_STRIP_KE)
 const port = process.env.PORT || 5000
 require("dotenv").config();
 
 app.use(cors())
 app.use(express.json())
 
-// console.log(process.env.STRIP_SK);
+console.log(process.env.TOKEN_STRIP_KE);
 
 app.get('/', (req, res) => {
   res.send('Node server running ..................')
@@ -47,6 +48,14 @@ async function run() {
       const count = await allproducts.estimatedDocumentCount()
       res.send({ resualt, count })
     })
+    app.get("/sellerallproducts/:seller", async (req, res) => {
+      const seller = req?.params?.seller
+      const query={seller}
+      console.log(seller);
+      const resualt= await allproducts.find(query).toArray()
+      res.send(resualt)
+     
+    })
 
     app.post('/all-products',async(req,res)=>{
       const email=req.query.email
@@ -55,7 +64,7 @@ async function run() {
       // console.log(selleruser.role);
       if(selleruser?.role){
         const data=req.body
-        console.log(data);
+        // console.log(data);
         const resualt=await allproducts.insertOne(data)
         res.send(resualt)
       }else{
@@ -88,12 +97,12 @@ async function run() {
       const booking = req.body;
       const price = booking.totalprice;
       const amount = price * 100;
-      const paymentIntent = await stripe.paymentIntents.create({
-        currency: 'usd',
+      const paymentIntent = await stripe?.paymentIntents?.create({
         amount: amount,
-        "payment_method_types": [
-          "card"
-        ]
+        currency: "usd",
+        automatic_payment_methods: {
+          enabled: true,
+        },
       });
       res.send({
         clientSecret: paymentIntent.client_secret,
@@ -133,7 +142,7 @@ async function run() {
 
     app.post('/users', async (req, res) => {
       const user = req.body
-      console.log(user);
+      // console.log(user);
       const resualt = await usersCollection.insertOne(user)
       res.send(resualt)
     })
@@ -146,7 +155,7 @@ async function run() {
       const email = req.query.email;
       const query = { email };
       const user = await usersCollection.findOne(query);
-      console.log(user);
+      // console.log(user);
       if (user?.role !== "admin") {
         return res.status(401).send({ message: "forbiden access" });
       }
@@ -181,7 +190,7 @@ async function run() {
     })
     app.post('/cart', async (req, res) => {
       const data = req.body
-      console.log(data);
+      // console.log(data);
       const resualt = await cartCollection.insertOne(data)
       res.send(resualt)
     })
@@ -190,7 +199,7 @@ async function run() {
       // console.log(email);
       const query = { email: email }
       const user = await usersCollection.findOne(query)
-      console.log(user.role);
+      // console.log(user.role);
       if (user?.role) {
         const query = {}
         const resualt = await cartCollection.find(query).toArray()
@@ -204,14 +213,14 @@ async function run() {
 
     app.patch('/selleruser',async(req,res)=>{
       const data=req.body
-      console.log(data);
+      // console.log(data);
       const resualt=await sellerUserCollection.insertOne(data)
       res.send(resualt)
     })
     app.get('/selleruser/:email',async(req,res)=>{
       const email=req.params.email
       const query={email:email}
-      console.log(query);
+      // console.log(query);
       const resualt=await sellerUserCollection.findOne(query)
       res.send(resualt)
     })
