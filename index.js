@@ -1,16 +1,56 @@
 const express = require('express')
 const cors = require('cors')
 const app = express()
-const stripe = require('stripe')('sk_test_51NrtkkG1p3nVEVTLXr7tNcRtVojRV6Frog35vZNy8mAXnbWl2Dvr7FWzD3gwgriuJTS0EPfJz3gusnSZTJDvmDTg00n2mjxZBv')
-// const stripeapike=process.env.TOKEN_STRIP_KE
-// const stripe = require("stripe")(process.env.TOKEN_STRIP_KE)
+const stripe=process.env.TOKEN_STRIP_KE
 const port = process.env.PORT || 5000
 require("dotenv").config();
+
+
+//mail sender// node mailer-mailgun
+const nodemailer = require('nodemailer');
+const mg = require('nodemailer-mailgun-transport');
+
+function sendnodemailermailgan(payment) {
+  const auth = {
+  auth: {
+    api_key: process.env.EMAIL_API_KE,
+    domain: process.env.EMAIL_DOMAIN
+  }
+}
+
+const nodemailerMailgun = nodemailer.createTransport(mg(auth));
+
+nodemailerMailgun.sendMail({
+  from: 'mdalifk2002@gmail.com',
+  to: payment.email, 
+  subject: `Hi ${payment.name} , Your order ${payment.producname} Confarm`,
+  html: `
+  <h1>Product Name : ${payment.producname}</h1>
+  <h1>Price : ${payment.price}</h1>
+  <h1>Product Qurntity : ${payment.quentity}</h1>
+  <h1>Trsnsation ID : ${payment.transactionId}</h1>
+  <h1>Seller : ${payment.seller}</h1>
+  <img src=${payment.img}/>
+  <h1>You are Wealcome</h1>
+  
+  `,
+  text: 'wealcome'
+}, (err, info) => {
+  if (err) {
+    console.log(`Error: ${err}`);
+  }
+  else {
+    console.log(`Response: ${info}`);
+  }
+});
+
+}
+
+
 
 app.use(cors())
 app.use(express.json())
 
-console.log(process.env.TOKEN_STRIP_KE);
 
 app.get('/', (req, res) => {
   res.send('Node server running ..................')
@@ -51,7 +91,6 @@ async function run() {
     app.get("/sellerallproducts/:seller", async (req, res) => {
       const seller = req?.params?.seller
       const query={seller}
-      console.log(seller);
       const resualt= await allproducts.find(query).toArray()
       res.send(resualt)
      
@@ -61,10 +100,8 @@ async function run() {
       const email=req.query.email
       const query={email}
       const selleruser=await sellerUserCollection.findOne(query)
-      // console.log(selleruser.role);
       if(selleruser?.role){
         const data=req.body
-        // console.log(data);
         const resualt=await allproducts.insertOne(data)
         res.send(resualt)
       }else{
@@ -80,7 +117,6 @@ async function run() {
     app.get("/catagorie-lod-data/:categoryname", async (req, res) => {
       const category = req.params.categoryname
       const query = { category: category }
-      // console.log(category);
       const resualt = await allproducts.find(query).toArray()
       res.send(resualt)
     })
@@ -112,17 +148,8 @@ async function run() {
 
     app.post('/payments', async (req, res) => {
       const payment = req.body;
-      // console.log(payment);
       const result = await paymentCollection.insertOne(payment);
-      // const id = payment.bookingId
-      // const filter = {_id: ObjectId(id)}
-      // const updatedDoc = {
-      //     $set: {
-      //         paid: true,
-      //         transactionId: payment.transactionId
-      //     }
-      // }
-      // const updatedResult = await bookingsCollection.updateOne(filter, updatedDoc)
+      sendnodemailermailgan(payment)
       res.send(result);
     })
     app.get('/myorder', async (req, res) => {
@@ -142,7 +169,6 @@ async function run() {
 
     app.post('/users', async (req, res) => {
       const user = req.body
-      // console.log(user);
       const resualt = await usersCollection.insertOne(user)
       res.send(resualt)
     })
@@ -155,7 +181,6 @@ async function run() {
       const email = req.query.email;
       const query = { email };
       const user = await usersCollection.findOne(query);
-      // console.log(user);
       if (user?.role !== "admin") {
         return res.status(401).send({ message: "forbiden access" });
       }
@@ -190,16 +215,13 @@ async function run() {
     })
     app.post('/cart', async (req, res) => {
       const data = req.body
-      // console.log(data);
       const resualt = await cartCollection.insertOne(data)
       res.send(resualt)
     })
     app.get('/cart', async (req, res) => {
       const email = req.query.email
-      // console.log(email);
       const query = { email: email }
       const user = await usersCollection.findOne(query)
-      // console.log(user.role);
       if (user?.role) {
         const query = {}
         const resualt = await cartCollection.find(query).toArray()
@@ -213,14 +235,12 @@ async function run() {
 
     app.patch('/selleruser',async(req,res)=>{
       const data=req.body
-      // console.log(data);
       const resualt=await sellerUserCollection.insertOne(data)
       res.send(resualt)
     })
     app.get('/selleruser/:email',async(req,res)=>{
       const email=req.params.email
       const query={email:email}
-      // console.log(query);
       const resualt=await sellerUserCollection.findOne(query)
       res.send(resualt)
     })
